@@ -3,23 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <title>Nitro Fan Control</title>
-    <style>
-        body {
-            background-color: #1a1a1a;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-        }
-        h1 {
-            color: #e61610;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="custom.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Nitro Fan Control</h1>
-    <p>This is a test page to debug packaging issues.</p>
-    <p>If you can see this, the HTML loading is working!</p>
-    <p>The backend is already working correctly.</p>
+    <!-- Custom Title Bar -->
+    <div class="titlebar">
+        <div class="titlebar-drag">
+            <img src="assets/icon.png" alt="Logo" class="logo">
+            <span>Nitro Fan Control</span>
+        </div>
+        <div class="titlebar-controls">
+            <button id="minimize-btn">
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                    <rect width="10" height="1" x="1" y="6" fill="currentColor"></rect>
+                </svg>
+            </button>
+            <button id="maximize-btn">
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                    <rect width="9" height="9" x="1.5" y="1.5" fill="none" stroke="currentColor"></rect>
+                </svg>
+            </button>
+            <button id="close-btn">
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                    <path d="M1,1 L11,11 M1,11 L11,1" stroke="currentColor" stroke-width="1.5"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="hardware-info">
+                <h2>Hardware Info</h2>
+                <div class="hardware-item">
+                    <span class="label">CPU:</span>
+                    <span class="value" id="cpu-model">Loading...</span>
+                </div>
+                <div class="hardware-item">
+                    <span class="label">GPU:</span>
+                    <span class="value" id="gpu-model">Loading...</span>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h2>Fan Profiles</h2>
+                <div class="profile-buttons">
+                    <button class="profile-btn active" data-profile="Balanced">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                        </svg>
+                        Balanced
+                    </button>
+                    <button class="profile-btn" data-profile="Performance">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                        </svg>
+                        Performance
+                    </button>
+                    <button class="profile-btn" data-profile="Silent">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                        </svg>
+                        Silent
+                    </button>
+                    <button class="profile-btn" data-profile="Custom">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+                        </svg>
+                        Custom
+                    </button>
+                </div>
+            </div>
+
+            <div class="mode-toggle">
+                <h2>Fan Control Mode</h2>
+                <div class="toggle-container">
+                    <span id="mode-label">Manual Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="mode-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="monitoring-column">
+                <!-- CPU Card -->
+                <div class="card cpu">
+                    <div class="card-header">
+                        <h2>CPU Temperature</h2>
+                        <div class="temp-badge" id="cpu-temp">0°C</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="nitro-gauge-container">
+                            <div class="nitro-gauge cpu" id="cpu-gauge">
+                                <div class="fan-ring cpu-ring"></div>
+                                <div class="gauge-value">0</div>
+                                <div class="gauge-label">RPM</div>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-label">Fan Speed</div>
+                                <div class="stat-value" id="cpu-speed">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GPU Card -->
+                <div class="card gpu">
+                    <div class="card-header">
+                        <h2>GPU Temperature</h2>
+                        <div class="temp-badge" id="gpu-temp">0°C</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="nitro-gauge-container">
+                            <div class="nitro-gauge gpu" id="gpu-gauge">
+                                <div class="fan-ring gpu-ring"></div>
+                                <div class="gauge-value">0</div>
+                                <div class="gauge-label">RPM</div>
+                            </div>
+                        </div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-label">Fan Speed</div>
+                                <div class="stat-value" id="gpu-speed">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temperature Chart -->
+                <div class="card chart-card full-width">
+                    <div class="card-header">
+                        <h2>Temperature History</h2>
+                        <div class="chart-controls">
+                            <button class="chart-btn active" data-time="5">5m</button>
+                            <button class="chart-btn" data-time="15">15m</button>
+                            <button class="chart-btn" data-time="30">30m</button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <canvas id="temp-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-column">
+                <!-- Fan Control Card -->
+                <div class="card fan-control-card">
+                    <div class="card-header">
+                        <h2>Fan Control</h2>
+                        <button class="control-btn" id="refresh-btn">Refresh</button>
+                    </div>
+                    <div class="card-content">
+                        <!-- All Fans Slider -->
+                        <div class="slider-group">
+                            <label>All Fans</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="50" class="fan-slider" id="fan-slider">
+                                <div class="slider-value" id="slider-value">50%</div>
+                            </div>
+                        </div>
+
+                        <!-- CPU Fan Slider -->
+                        <div class="slider-group">
+                            <label>CPU Fan</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="50" class="fan-slider" id="cpu-fan-slider">
+                                <div class="slider-value" id="cpu-slider-value">50%</div>
+                            </div>
+                        </div>
+
+                        <!-- GPU Fan Slider -->
+                        <div class="slider-group">
+                            <label>GPU Fan</label>
+                            <div class="slider-container">
+                                <input type="range" min="0" max="100" value="50" class="fan-slider" id="gpu-fan-slider">
+                                <div class="slider-value" id="gpu-slider-value">50%</div>
+                            </div>
+                        </div>
+
+                        <!-- Control Buttons -->
+                        <div class="button-row">
+                            <button class="control-btn" id="reset-btn">Reset</button>
+                            <button class="control-btn primary" id="default-btn">Default</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span>Status:</span>
+            <span id="status-value">Connecting...</span>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
 </body>
 </html> 
