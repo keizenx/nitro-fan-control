@@ -15,9 +15,9 @@
     "nitro"
   ],
   "author": {
-  "name": "keizenx",
-  "email": "franckbello0@gmail.com"
-}
+    "name": "keizenx",
+    "email": "franckbello0@gmail.com"
+  },
   "license": "MIT",
   "devDependencies": {
     "electron": "^37.2.0",
