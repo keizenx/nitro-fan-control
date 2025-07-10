@@ -1,5 +1,6 @@
 appId: com.example.nitrofancontrol
 productName: NitroFanControl
+asar: false
 directories:
   output: dist
 files:

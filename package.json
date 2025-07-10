@@ -1,7 +1,7 @@
 {
   "name": "nitro-fan-control",
-  "version": "1.0.0",
-  "description": "Acer Nitro Fan Control for Linux",
+  "version": "1.0.4",
+  "description": "An Electron app to control Nitro laptop fan speeds.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
