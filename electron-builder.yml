@@ -1,0 +1,12 @@
+appId: com.keizenx.nitrofancontrol
+productName: NitroFanControl
+files:
+  - main.js
+  - renderer/
+  - assets/
+icon: assets/icon.png
+linux:
+  target:
+    - deb
+    - AppImage
+  category: System 
