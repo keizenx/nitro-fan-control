@@ -1,16 +1,15 @@
 appId: com.example.nitrofancontrol
 productName: NitroFanControl
-asar: false
 directories:
   output: dist
 files:
   - "main.js"
-  - "renderer/"
-  - "backend/"
   - "package.json"
-  - "assets/"
+  - "renderer/**/*"
+  - "backend/**/*"
+  - "assets/**/*"
 asarUnpack:
-  - "backend/**"
+  - "backend/**/*"
 linux:
   target:
     - deb

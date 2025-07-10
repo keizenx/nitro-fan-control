@@ -1,6 +1,6 @@
 {
   "name": "nitro-fan-control",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "An Electron app to control Nitro laptop fan speeds.",
   "main": "main.js",
   "scripts": {
