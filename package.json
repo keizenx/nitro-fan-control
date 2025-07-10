@@ -1,0 +1,26 @@
+{
+  "name": "nitro-fan-control",
+  "version": "1.0.0",
+  "description": "Acer Nitro Fan Control for Linux",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [
+    "electron",
+    "nbfc",
+    "fan-control",
+    "acer",
+    "nitro"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-builder": "^24.4.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.3.3"
+  }
+} 

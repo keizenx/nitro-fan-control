@@ -1,0 +1,15 @@
+Pour obtenir une capture d'écran de l'application:
+
+1. Une fois que vous aurez construit et exécuté l'application, prenez une capture d'écran en utilisant:
+   - Sur Linux: appuyez sur la touche "Impr écran" ou utilisez l'outil de capture d'écran (ex: `gnome-screenshot`)
+   - Ou utilisez la commande: `scrot -u -d 5 screenshot.png` (installe scrot si nécessaire)
+
+2. Placez la capture d'écran dans ce répertoire (docs/screenshot.png)
+
+3. La capture d'écran devrait montrer l'interface avec:
+   - Le thème sombre avec les accents orange
+   - Les jauges de ventilateur en action
+   - Le graphique affichant des données de température
+   - Si possible, plusieurs profils et modes visibles
+
+Cette capture d'écran sera utilisée dans le README pour montrer l'apparence de l'application. 
