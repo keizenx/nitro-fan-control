@@ -3,13 +3,9 @@ productName: NitroFanControl
 directories:
   output: dist
 files:
-  - "main.js"
-  - "package.json"
-  - "renderer/**/*"
-  - "backend/**/*"
-  - "assets/**/*"
+  - "**/*"
 asarUnpack:
-  - "backend/**/*"
+  - "backend/**"
 linux:
   target:
     - deb
