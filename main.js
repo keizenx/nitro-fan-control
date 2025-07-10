@@ -48,8 +48,8 @@ function createWindow() {
   // Load the HTML interface
   let indexPath;
   if (app.isPackaged) {
-    // In production, use the absolute path to the file in the asar
-    indexPath = path.join(app.getAppPath(), 'renderer', 'index.html');
+    // In production, use the absolute path to the file in the unpacked renderer directory
+    indexPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'renderer', 'index.html');
   } else {
     // In development, use a path relative to __dirname
     indexPath = path.join(__dirname, 'renderer', 'index.html');
