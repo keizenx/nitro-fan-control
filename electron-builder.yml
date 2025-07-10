@@ -1,12 +1,18 @@
-appId: com.keizenx.nitrofancontrol
+appId: com.example.nitrofancontrol
 productName: NitroFanControl
+directories:
+  output: dist
 files:
-  - main.js
-  - renderer/
-  - assets/
-icon: assets/icon.png
+  - "**/*"
 linux:
   target:
     - deb
-    - AppImage
-  category: System 
+  maintainer: "franck.d@yahoo.com"
+  category: Utility
+  icon: "renderer/assets/icon.png"
+win:
+  target: nsis
+  icon: "renderer/assets/icon.ico"
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true 
