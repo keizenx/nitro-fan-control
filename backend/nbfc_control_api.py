@@ -464,7 +464,7 @@ class NBFCController:
                 # Incrémenter le compteur
                 counter += 1
                 
-                time.sleep(0.5)  # Mise à jour plus fréquente pour une meilleure réactivité
+                time.sleep(0.5)  # More frequent updates for better responsiveness
                 
             except Exception as e:
                 print(f"Error in update loop: {e}", file=sys.stderr)

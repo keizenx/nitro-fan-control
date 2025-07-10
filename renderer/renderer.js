@@ -39,7 +39,6 @@ const chartButtons = document.querySelectorAll('.chart-btn');
 
 const resetBtn = document.getElementById('reset-btn');
 const defaultBtn = document.getElementById('default-btn');
-const actualiserBtn = document.getElementById('actualiser-btn');
 const refreshBtn = document.getElementById('refresh-btn');
 
 
@@ -303,9 +302,7 @@ defaultBtn.addEventListener('click', () => {
     ipcRenderer.send('set-fan-speed', { speed: value });
     });
     
-    actualiserBtn.addEventListener('click', () => {
-        ipcRenderer.send('request-fan-status');
-    });
+
 
     refreshBtn.addEventListener('click', () => {
         ipcRenderer.send('request-fan-status');

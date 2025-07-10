@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.17)'
+        required: true
+        default: '1.0.17'
 
 jobs:
   release:
@@ -19,9 +25,24 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxkbfile-dev libsecret-1-dev fakeroot rpm
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Update version if manually triggered
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ -n "$VERSION" ]]; then
+            npm version $VERSION --no-git-tag-version
+            echo "Updated version to $VERSION"
+          fi
 
       - name: Build application
         run: npm run build
@@ -29,11 +50,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: List build artifacts
-        run: ls -R dist
+        run: ls -la dist/
 
-      - name: Create Release and Upload Assets
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          name: "Nitro Fan Control v${{ steps.package-version.outputs.version }}"
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
           files: |
             dist/*.deb
-            dist/*.AppImage 
+            dist/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

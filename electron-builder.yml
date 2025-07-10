@@ -1,20 +1,46 @@
-appId: com.example.nitrofancontrol
+appId: com.keizenx.nitrofancontrol
 productName: NitroFanControl
 asar: false
 directories:
   output: dist
 files:
   - "**/*"
+  - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
+  - "!**/node_modules/*.d.ts"
+  - "!**/node_modules/.bin"
+  - "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}"
+  - "!.editorconfig"
+  - "!**/._*"
+  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
+  - "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}"
+  - "!**/{appveyor.yml,.travis.yml,circle.yml}"
+  - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
 linux:
   target:
-    - deb
     - AppImage
-  maintainer: "franck.d@yahoo.com"
+    - deb
+  maintainer: "keizenx <franckbello0@gmail.com>"
   category: Utility
-  icon: "renderer/assets/icon.png"
-win:
-  target: nsis
-  icon: "renderer/assets/icon.ico"
-nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true 
+  icon: "assets/icon.png"
+  executableName: nitro-fan-control
+  synopsis: "Fan control for Acer Nitro laptops"
+  description: "A sleek and modern desktop application to monitor and control fan speeds on Acer Nitro laptops."
+  desktop:
+    Name: NitroFanControl
+    Comment: Fan control for Acer Nitro laptops
+    Categories: Utility;System;
+    Terminal: false
+  artifactName: "${productName}-${version}-${arch}.${ext}"
+deb:
+  depends:
+    - nbfc
+  afterInstall: "./backend/scripts/after-install.sh"
+  afterRemove: "./backend/scripts/after-remove.sh"
+  fpm:
+    - "--deb-no-default-config-files"
+appImage:
+  license: LICENSE
+publish:
+  provider: github
+  releaseType: release 

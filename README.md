@@ -38,7 +38,22 @@
 
 This application is a graphical frontend and requires a backend service to control the fans. We recommend using **NoteBook FanControl (NBFC)**.
 
-### 1. Backend Setup (NBFC)
+### Option 1: Pre-built Packages (Recommended)
+
+You can download pre-built packages from the [GitHub Releases](https://github.com/keizenx/nitro-fan-control/releases) page.
+
+**AppImage**:
+1. Download the `.AppImage` file from the latest release
+2. Make it executable: `chmod +x NitroFanControl-*.AppImage`
+3. Run it: `./NitroFanControl-*.AppImage`
+
+**DEB Package (Debian/Ubuntu)**:
+1. Download the `.deb` file from the latest release
+2. Install it: `sudo apt install ./NitroFanControl-*.deb`
+
+### Option 2: Build from Source
+
+#### 1. Backend Setup (NBFC)
 
 You need to install and configure NBFC for your specific laptop model.
 
@@ -66,24 +81,29 @@ NBFC requires a configuration file that matches your laptop model.
 
 For other Linux distributions, please follow the official [NBFC-Linux guide](https://github.com/nbfc-linux/nbfc-linux).
 
-### 2. Frontend Setup (This App)
+#### 2. Frontend Setup (This App)
 
 Once the backend service is running, you can set up this Electron application.
 
 1.  **Clone the repository:**
 ```bash
-    git clone https://github.com/keizenx/nitro-fan-control.git
-    cd nitro-fan-control
-    ```
+git clone https://github.com/keizenx/nitro-fan-control.git
+cd nitro-fan-control
+```
 
 2.  **Install dependencies:**
 ```bash
-    npm install
+npm install
 ```
 
 3.  **Run the application:**
 ```bash
 npm start
+```
+
+4.  **Build packages (optional):**
+```bash
+npm run build
 ```
 
 ## Usage
