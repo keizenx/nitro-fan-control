@@ -45,7 +45,7 @@ function createWindow() {
   });
 
   // Load the HTML interface
-  const indexPath = path.join(__dirname, 'renderer', 'index.html');
+  const indexPath = path.join(__dirname, 'index.html');
   console.log(`[Main] Loading HTML from: ${indexPath}`);
   mainWindow.loadFile(indexPath);
 
