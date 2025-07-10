@@ -8,9 +8,8 @@ files:
   - "backend/"
   - "package.json"
   - "assets/"
-asar:
-  unpack:
-    - "backend/**"
+asarUnpack:
+  - "backend/**"
 linux:
   target:
     - deb
