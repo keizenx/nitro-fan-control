@@ -7,6 +7,7 @@ files:
   - "renderer/"
   - "backend/"
   - "package.json"
+  - "assets/"
 asar:
   unpack:
     - "backend/**"
