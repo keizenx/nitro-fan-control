@@ -9,9 +9,8 @@ const pythonExecutable = 'python3';
 
 let pythonScriptPath;
 if (appIsPackaged) {
-    // In a packaged app, the unpacked files are in a directory
-    // alongside the asar archive.
-    pythonScriptPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'backend', 'nbfc_control_api.py');
+    // In a packaged app without asar, the files are directly in the resources/app directory
+    pythonScriptPath = path.join(process.resourcesPath, 'app', 'backend', 'nbfc_control_api.py');
 } else {
     // In development, we can use a relative path.
     pythonScriptPath = path.join(__dirname, 'backend', 'nbfc_control_api.py');
