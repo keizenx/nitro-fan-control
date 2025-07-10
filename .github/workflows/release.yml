@@ -36,4 +36,4 @@ jobs:
         with:
           files: |
             dist/*.deb
-            dist/*.AppImage
+            dist/*.AppImage 

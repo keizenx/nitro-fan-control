@@ -13,6 +13,7 @@
   --transition: all 0.3s ease;
   --cpu-color: #FF7300;
   --gpu-color: #00A3FF;
+  --chart-bg: rgba(26, 26, 26, 0.7);
 }
 
 /* Base */
@@ -94,7 +95,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-  width: 220px;
+  width: 180px;
   background-color: var(--bg-secondary);
   padding: 20px;
   display: flex;
@@ -108,20 +109,6 @@ body {
   margin-bottom: 15px;
   font-weight: 600;
   letter-spacing: 1px;
-}
-
-.hardware-info .hardware-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.hardware-info .label {
-  color: var(--text-secondary);
-}
-
-.hardware-info .value {
-  color: var(--text-primary);
 }
 
 .profile-buttons {
@@ -157,7 +144,7 @@ body {
   font-size: 16px;
 }
 
-.mode-toggle .toggle-container {
+.toggle-container {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -212,21 +199,31 @@ input:checked + .slider:before {
 .main-content {
   flex: 1;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto 1fr;
   gap: 20px;
   overflow-y: auto;
 }
 
-.top-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+#cpu-card {
+  grid-column: 1;
+  grid-row: 1;
 }
 
-.bottom-row {
-  flex: 1;
-  min-height: 250px;
+#fan-control-card {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+#gpu-card {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+#temp-history-card {
+  grid-column: 1 / 4;
+  grid-row: 2;
 }
 
 .card {
@@ -237,6 +234,8 @@ input:checked + .slider:before {
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .card:hover {
@@ -260,10 +259,6 @@ input:checked + .slider:before {
   0% { box-shadow: 0 0 5px rgba(255, 48, 0, 0.3); }
   50% { box-shadow: 0 0 20px rgba(255, 48, 0, 0.6); }
   100% { box-shadow: 0 0 5px rgba(255, 48, 0, 0.3); }
-}
-
-.card.full-width {
-  width: 100%;
 }
 
 .card-header {
@@ -335,6 +330,61 @@ input:checked + .slider:before {
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  flex: 1;
+}
+
+/* Fan Animations */
+.fan-animation {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  margin-right: 20px;
+}
+
+.fan-animation:before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: url('./assets/fan.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: rotate 5s linear infinite;
+  animation-play-state: paused;
+}
+
+.fan-animation.cpu-fan:before {
+  filter: drop-shadow(0 0 8px var(--cpu-color));
+}
+
+.fan-animation.gpu-fan:before {
+  filter: drop-shadow(0 0 8px var(--gpu-color));
+}
+
+.fan-animation.spinning-slow:before {
+  animation-play-state: running;
+  animation-duration: 3s;
+}
+
+.fan-animation.spinning-medium:before {
+  animation-play-state: running;
+  animation-duration: 1.5s;
+}
+
+.fan-animation.spinning-fast:before {
+  animation-play-state: running;
+  animation-duration: 0.7s;
+}
+
+.fan-animation.spinning-turbo:before {
+  animation-play-state: running;
+  animation-duration: 0.3s;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Gauges */
@@ -342,16 +392,15 @@ input:checked + .slider:before {
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-bottom: 10px;
 }
 
 .gauge {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
-  border: 8px solid #333;
   position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -359,14 +408,15 @@ input:checked + .slider:before {
   background-color: var(--bg-tertiary);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
   transition: all 0.5s ease;
+  overflow: hidden;
 }
 
 .gauge.cpu {
-  border-color: rgba(255, 115, 0, 0.3);
+  border: 6px solid var(--cpu-color);
 }
 
 .gauge.gpu {
-  border-color: rgba(0, 163, 255, 0.3);
+  border: 6px solid var(--gpu-color);
 }
 
 .gauge:before {
@@ -439,62 +489,64 @@ input:checked + .slider:before {
   width: 100%;
 }
 
-.fan-animation-container {
+.fan-control-sliders {
   display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
 }
 
-.fan-animation {
-  width: 120px;
-  height: 120px;
-  background-image: url('../assets/fan.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  animation: rotate 2s linear infinite;
-  animation-play-state: paused;
-  transition: all 0.3s ease;
-  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+.fan-slider-item {
+  width: 100%;
 }
 
-.fan-animation.cpu-active {
-  filter: drop-shadow(0 0 10px var(--cpu-color));
-}
-
-.fan-animation.gpu-active {
-  filter: drop-shadow(0 0 10px var(--gpu-color));
-}
-
-.fan-animation.turbo {
-  animation-duration: 0.5s;
-  filter: drop-shadow(0 0 15px var(--accent-glow));
-}
-
-@keyframes rotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes pulse-glow {
-  0% { filter: drop-shadow(0 0 5px var(--accent-glow)); }
-  50% { filter: drop-shadow(0 0 15px var(--accent-glow)); }
-  100% { filter: drop-shadow(0 0 5px var(--accent-glow)); }
+.fan-slider-item label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 14px;
 }
 
 .slider-container {
+  position: relative;
   width: 100%;
-  margin-bottom: 20px;
+  height: 30px;
+  margin-bottom: 10px;
+}
+
+.slider-indicator {
+  position: absolute;
+  height: 8px;
+  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  width: 0%;
+  z-index: 0;
+  transition: width 0.3s ease;
+}
+
+.slider-indicator.master {
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+}
+
+.slider-indicator.cpu {
+  background: linear-gradient(90deg, var(--cpu-color), #FFA54F);
+}
+
+.slider-indicator.gpu {
+  background: linear-gradient(90deg, var(--gpu-color), #4FC3FF);
 }
 
 .fan-slider {
   -webkit-appearance: none;
   width: 100%;
   height: 8px;
-  border-radius: 5px;
+  border-radius: 4px;
   background: var(--bg-tertiary);
   outline: none;
-  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .fan-slider::-webkit-slider-thumb {
@@ -506,23 +558,33 @@ input:checked + .slider:before {
   background: var(--accent);
   cursor: pointer;
   transition: var(--transition);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.fan-slider.cpu::-webkit-slider-thumb {
+  background: var(--cpu-color);
+}
+
+.fan-slider.gpu::-webkit-slider-thumb {
+  background: var(--gpu-color);
 }
 
 .fan-slider::-webkit-slider-thumb:hover {
-  background: var(--accent-hover);
   transform: scale(1.1);
 }
 
 .slider-value {
-  text-align: center;
-  font-size: 16px;
+  text-align: right;
+  font-size: 14px;
   font-weight: bold;
+  color: var(--text-primary);
 }
 
 .button-row {
   display: flex;
   gap: 10px;
   width: 100%;
+  margin-top: 10px;
 }
 
 .control-btn {
@@ -566,29 +628,16 @@ input:checked + .slider:before {
   box-shadow: 0 4px 12px rgba(230, 22, 16, 0.5);
 }
 
-.control-btn.cpu {
-  background-color: rgba(255, 115, 0, 0.8);
-  color: var(--text-primary);
-  box-shadow: 0 2px 10px rgba(255, 115, 0, 0.3);
+/* Chart Container */
+.chart-container {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  background-color: var(--chart-bg);
+  border-radius: var(--border-radius);
+  padding: 10px;
 }
 
-.control-btn.cpu:hover {
-  background-color: rgba(255, 115, 0, 1);
-  box-shadow: 0 4px 12px rgba(255, 115, 0, 0.5);
-}
-
-.control-btn.gpu {
-  background-color: rgba(0, 163, 255, 0.8);
-  color: var(--text-primary);
-  box-shadow: 0 2px 10px rgba(0, 163, 255, 0.3);
-}
-
-.control-btn.gpu:hover {
-  background-color: rgba(0, 163, 255, 1);
-  box-shadow: 0 4px 12px rgba(0, 163, 255, 0.5);
-}
-
-/* Graph */
 .chart-controls {
   display: flex;
   gap: 5px;
@@ -637,18 +686,29 @@ input:checked + .slider:before {
 
 /* Responsive */
 @media (max-width: 1000px) {
-  .top-row {
+  .main-content {
     grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto 1fr;
   }
   
-  .fan-animation-container {
-    display: flex;
-    gap: 15px;
+  #cpu-card {
+    grid-column: 1;
+    grid-row: 1;
   }
   
-  .fan-animation {
-    width: 80px;
-    height: 80px;
+  #fan-control-card {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  
+  #gpu-card {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  #temp-history-card {
+    grid-column: 1 / 3;
+    grid-row: 3;
   }
 }
 
@@ -664,8 +724,29 @@ input:checked + .slider:before {
     overflow-x: auto;
   }
   
-  .top-row {
+  .main-content {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto 1fr;
+  }
+  
+  #cpu-card {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  
+  #fan-control-card {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  #gpu-card {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  
+  #temp-history-card {
+    grid-column: 1;
+    grid-row: 4;
   }
   
   .card-header h2 {
@@ -673,14 +754,8 @@ input:checked + .slider:before {
   }
   
   .gauge {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .fan-animation-container {
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
+    width: 120px;
+    height: 120px;
   }
 }
 
@@ -694,8 +769,8 @@ input:checked + .slider:before {
   }
   
   .gauge {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
   }
   
   .gauge-value {
@@ -705,11 +780,6 @@ input:checked + .slider:before {
   .temp-badge {
     padding: 4px 6px;
     font-size: 12px;
-  }
-  
-  .fan-animation {
-    width: 60px;
-    height: 60px;
   }
 }
 
@@ -726,22 +796,12 @@ input:checked + .slider:before {
   100% { text-shadow: 0 0 5px rgba(230, 22, 16, 0.5); }
 }
 
-@keyframes fan-speed-change {
-  0% { opacity: 0.7; }
-  50% { opacity: 1; transform: scale(1.05); }
-  100% { opacity: 0.7; }
-}
-
 .temp-pulse {
   animation: temp-pulse 0.5s ease;
 }
 
 .glow-pulse {
   animation: glow-pulse 1.5s infinite;
-}
-
-.fan-speed-change {
-  animation: fan-speed-change 0.8s ease;
 }
 
 /* Styles for high temperatures */

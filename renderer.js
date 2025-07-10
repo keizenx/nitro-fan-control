@@ -9,110 +9,128 @@ let temperatureData = {
     gpu: []
 };
 let chartTimeRange = 5; // minutes
-let animationSpeed = 0;
-let currentProfile = 'Balanced';
-let isDynamicMode = false;
-let fanData = null;
+let isManualMode = false;
+let updateInterval = null;
+let lastCpuSpeed = 0;
+let lastGpuSpeed = 0;
 
 // DOM Elements
-const fanAnimation = document.getElementById('fan-animation');
+const cpuTemp = document.getElementById('cpu-temp');
+const cpuRpm = document.getElementById('cpu-rpm');
+const cpuSpeed = document.getElementById('cpu-speed');
+const cpuGauge = document.getElementById('cpu-gauge');
+
+const gpuTemp = document.getElementById('gpu-temp');
+const gpuRpm = document.getElementById('gpu-rpm');
+const gpuSpeed = document.getElementById('gpu-speed');
+const gpuGauge = document.getElementById('gpu-gauge');
+
 const fanSlider = document.getElementById('fan-slider');
 const cpuFanSlider = document.getElementById('cpu-fan-slider');
 const gpuFanSlider = document.getElementById('gpu-fan-slider');
 const sliderValue = document.getElementById('slider-value');
 const cpuSliderValue = document.getElementById('cpu-slider-value');
 const gpuSliderValue = document.getElementById('gpu-slider-value');
-const cpuTemp = document.getElementById('cpu-temp');
-const cpuGauge = document.getElementById('cpu-gauge');
-const cpuSpeed = document.getElementById('cpu-speed');
-const cpuModel = document.getElementById('cpu-model');
-const gpuTemp = document.getElementById('gpu-temp');
-const gpuGauge = document.getElementById('gpu-gauge');
-const gpuSpeed = document.getElementById('gpu-speed');
-const gpuModel = document.getElementById('gpu-model');
+
 const statusValue = document.getElementById('status-value');
 const modeToggle = document.getElementById('mode-toggle');
 const modeLabel = document.getElementById('mode-label');
 const profileButtons = document.querySelectorAll('.profile-btn');
-const resetBtn = document.getElementById('reset-btn');
-const defaultBtn = document.getElementById('default-btn');
 const chartButtons = document.querySelectorAll('.chart-btn');
 
+const resetBtn = document.getElementById('reset-btn');
+const defaultBtn = document.getElementById('default-btn');
+
+// Slider indicators
+const masterSliderIndicator = document.querySelector('.slider-indicator.master');
+const cpuSliderIndicator = document.querySelector('.slider-indicator.cpu');
+const gpuSliderIndicator = document.querySelector('.slider-indicator.gpu');
+
 // Window controls
-document.getElementById('minimize-btn').addEventListener('click', () => {
-    ipcRenderer.send('window-minimize');
-});
+document.getElementById('minimize-btn').addEventListener('click', () => ipcRenderer.send('window-minimize'));
+document.getElementById('maximize-btn').addEventListener('click', () => ipcRenderer.send('window-maximize'));
+document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('window-close'));
 
-document.getElementById('maximize-btn').addEventListener('click', () => {
-    ipcRenderer.send('window-maximize');
-});
-
-document.getElementById('close-btn').addEventListener('click', () => {
-    ipcRenderer.send('window-close');
-});
 
 // Chart initialization
 function initChart() {
     const ctx = document.getElementById('temp-chart').getContext('2d');
-    
+
     temperatureChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
-            datasets: [
-                {
-                    label: 'CPU',
-                    data: [],
-                    borderColor: '#FF7300',
-                    backgroundColor: 'rgba(255, 115, 0, 0.1)',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true,
-                    tension: 0.4
-                },
-                {
-                    label: 'GPU',
-                    data: [],
-                    borderColor: '#00A3FF',
-                    backgroundColor: 'rgba(0, 163, 255, 0.1)',
-                    borderWidth: 2,
-                    pointRadius: 0,
-                    fill: true,
-                    tension: 0.4
-                }
-            ]
+            datasets: [{
+                label: 'CPU',
+                data: [],
+                borderColor: 'var(--cpu-color)',
+                backgroundColor: 'rgba(255, 115, 0, 0.2)',
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.3,
+                fill: true,
+            }, {
+                label: 'GPU',
+                data: [],
+                borderColor: 'var(--gpu-color)',
+                backgroundColor: 'rgba(0, 163, 255, 0.2)',
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.3,
+                fill: true,
+            }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                intersect: false,
-                mode: 'index'
+            animation: {
+                duration: 300,
+                easing: 'easeOutQuart',
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: 'var(--text-secondary)',
+                        boxWidth: 15,
+                        padding: 15,
+                        usePointStyle: true,
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                }
             },
             scales: {
                 x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                    grid: { 
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false,
                     },
-                    ticks: {
-                        color: '#AAAAAA'
+                    ticks: { 
+                        color: 'var(--text-secondary)',
+                        maxRotation: 0,
+                        maxTicksLimit: 8,
                     }
                 },
                 y: {
                     min: 30,
                     max: 100,
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                    grid: { 
+                        color: 'rgba(255, 255, 255, 0.05)',
+                        drawBorder: false,
                     },
-                    ticks: {
-                        color: '#AAAAAA'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#FFFFFF'
+                    ticks: { 
+                        color: 'var(--text-secondary)',
+                        stepSize: 10,
                     }
                 }
             }
@@ -120,412 +138,343 @@ function initChart() {
     });
 }
 
-// Update gauges
+// Update gauges - simple style like in the image
 function updateGauge(gaugeElement, value, maxValue) {
-    const percentage = (value / maxValue) * 100;
-    const valueElement = gaugeElement.querySelector('.gauge-value');
-    const prevValue = valueElement.dataset.prevValue ? parseInt(valueElement.dataset.prevValue) : 0;
-    
-    // Add an animation if the value changes significantly
-    if (Math.abs(prevValue - value) > maxValue * 0.05) { // 5% change
-        valueElement.classList.add('fan-speed-change');
-        setTimeout(() => valueElement.classList.remove('fan-speed-change'), 800);
-    }
-    
-    // Format the RPM value with a thousands separator
-    const formattedValue = Math.round(value).toLocaleString();
-    valueElement.textContent = formattedValue;
-    valueElement.dataset.prevValue = value;
-    valueElement.classList.add('rpm-value');
-    
-    // Update the percentage for CSS
-    gaugeElement.style.setProperty('--percentage', `${percentage}%`);
-    
-    // Apply appropriate classes based on gauge type
-    if (gaugeElement.classList.contains('cpu')) {
-        gaugeElement.style.background = `radial-gradient(circle, var(--bg-secondary) 65%, transparent 66%), conic-gradient(var(--cpu-color) ${percentage * 3.6}deg, rgba(255, 115, 0, 0.2) ${percentage * 3.6}deg)`;
-    } else if (gaugeElement.classList.contains('gpu')) {
-        gaugeElement.style.background = `radial-gradient(circle, var(--bg-secondary) 65%, transparent 66%), conic-gradient(var(--gpu-color) ${percentage * 3.6}deg, rgba(0, 163, 255, 0.2) ${percentage * 3.6}deg)`;
-    }
-    
-    // Add visual effects based on the value
-    if (percentage > 80) {
-        gaugeElement.classList.add('active');
-        if (gaugeElement.classList.contains('cpu')) {
-            gaugeElement.classList.add('cpu-active');
-        } else if (gaugeElement.classList.contains('gpu')) {
-            gaugeElement.classList.add('gpu-active');
-        }
-    } else {
-        gaugeElement.classList.remove('active', 'cpu-active', 'gpu-active');
-    }
-    
-    // Update the associated fan ring animation
-    const fanRing = gaugeElement.parentNode.querySelector('.fan-ring');
-    if (fanRing) {
-        if (value > 0) {
-            const speed = Math.max(0.5, 3 - (value / maxValue) * 2.5); // Limit minimum speed
-            fanRing.style.animationDuration = `${speed}s`;
-            fanRing.style.animationPlayState = 'running';
-        } else {
-            fanRing.style.animationPlayState = 'paused';
-        }
-    }
+    // No visual update for the gauge in this design
+    // The gauges are simple circles with colored borders
+    // We'll just update the text value inside
+}
+
+// Update slider indicators
+function updateSliderIndicator(indicator, value) {
+    indicator.style.width = `${value}%`;
 }
 
 // Update the UI with data
 function updateUI(data) {
-    if (!data) return;
-    
-    fanData = data;
-    
+    if (!data) {
+        statusValue.textContent = "Data Error";
+        return;
+    };
+
     // Update CPU data
     if (data.cpu) {
-        // Update temperature with decimal precision
-        const cpuTempValue = data.cpu.temperature;
-        const cpuTempDisplay = cpuTempValue.toFixed(1);
-        
-        // Store the previous value for animation
-        const prevCpuTemp = cpuTemp.dataset.prevTemp ? parseFloat(cpuTemp.dataset.prevTemp) : cpuTempValue;
-        
-        // Add a class for animation if the temperature changes significantly
-        if (Math.abs(prevCpuTemp - cpuTempValue) > 0.2) {
-            cpuTemp.classList.add('temp-pulse');
-            setTimeout(() => cpuTemp.classList.remove('temp-pulse'), 500);
-        }
-        
-        // Update temperature
-        cpuTemp.textContent = `${cpuTempDisplay}°C`;
-        cpuTemp.dataset.prevTemp = cpuTempValue;
-        
-        // Apply classes for high temperatures
-        if (cpuTempValue > 75) {
-            cpuTemp.classList.add('high-temp');
-            document.querySelector('.card.cpu')?.classList.add('warning');
-        } else {
-            cpuTemp.classList.remove('high-temp');
-            document.querySelector('.card.cpu')?.classList.remove('warning');
-        }
-        
-        cpuTemp.style.backgroundColor = getTemperatureColor(cpuTempValue);
-        
-        // Update RPM and gauge
+        const cpuTempValue = data.cpu.temperature || 0;
         const cpuRpmValue = data.cpu.rpm || 0;
-        
-        // Ensure the CPU gauge has the appropriate class
-        if (!cpuGauge.classList.contains('cpu')) {
-            cpuGauge.classList.add('cpu');
-        }
-        
-        updateGauge(cpuGauge, cpuRpmValue, 8000);
-        
-        // Update speed
-        const cpuSpeedValue = Math.round(data.cpu.speed);
-        cpuSpeed.textContent = `${cpuSpeedValue}%`;
-        
-        // Add data to the chart
+        const cpuSpeedValue = data.cpu.speed || 0;
+
+        cpuTemp.textContent = `${cpuTempValue.toFixed(1)}°C`;
+        cpuRpm.textContent = Math.round(cpuRpmValue).toLocaleString();
+        cpuSpeed.textContent = `${Math.round(cpuSpeedValue)}%`;
+
+        // Update temperature chart
         addTemperatureData('cpu', cpuTempValue);
         
-        // Update CPU fan animation
-        const cpuFanAnimation = document.querySelector('.fan-animation.cpu-fan');
-        if (cpuFanAnimation) {
-            if (cpuRpmValue > 0) {
-                cpuFanAnimation.classList.add('cpu-active');
-            } else {
-                cpuFanAnimation.classList.remove('cpu-active');
-            }
+        // Update CPU slider indicator
+        if (!isManualMode) {
+            updateSliderIndicator(cpuSliderIndicator, cpuSpeedValue);
         }
+        
+        // Add high temperature warning
+        if (cpuTempValue > 80) {
+            cpuTemp.classList.add('high');
+            cpuRpm.classList.add('high-temp');
+        } else {
+            cpuTemp.classList.remove('high');
+            cpuRpm.classList.remove('high-temp');
+        }
+        
+        lastCpuSpeed = cpuSpeedValue;
     }
     
     // Update GPU data
     if (data.gpu) {
-        // Update temperature with decimal precision
-        const gpuTempValue = data.gpu.temperature;
-        const gpuTempDisplay = gpuTempValue.toFixed(1);
-        
-        // Store the previous value for animation
-        const prevGpuTemp = gpuTemp.dataset.prevTemp ? parseFloat(gpuTemp.dataset.prevTemp) : gpuTempValue;
-        
-        // Add a class for animation if the temperature changes significantly
-        if (Math.abs(prevGpuTemp - gpuTempValue) > 0.2) {
-            gpuTemp.classList.add('temp-pulse');
-            setTimeout(() => gpuTemp.classList.remove('temp-pulse'), 500);
-        }
-        
-        // Apply classes for high temperatures
-        if (gpuTempValue > 80) {
-            gpuTemp.classList.add('high-temp');
-            document.querySelector('.card.gpu')?.classList.add('warning');
-        } else {
-            gpuTemp.classList.remove('high-temp');
-            document.querySelector('.card.gpu')?.classList.remove('warning');
-        }
-        
-        // Update temperature
-        gpuTemp.textContent = `${gpuTempDisplay}°C`;
-        gpuTemp.dataset.prevTemp = gpuTempValue;
-        gpuTemp.style.backgroundColor = getTemperatureColor(gpuTempValue);
-        
-        // Update RPM and gauge
+        const gpuTempValue = data.gpu.temperature || 0;
         const gpuRpmValue = data.gpu.rpm || 0;
-        updateGauge(gpuGauge, gpuRpmValue, 8000);
+        const gpuSpeedValue = data.gpu.speed || 0;
+
+        gpuTemp.textContent = `${gpuTempValue.toFixed(1)}°C`;
+        gpuRpm.textContent = Math.round(gpuRpmValue).toLocaleString();
+        gpuSpeed.textContent = `${Math.round(gpuSpeedValue)}%`;
         
-        // Update speed
-        const gpuSpeedValue = Math.round(data.gpu.speed);
-        gpuSpeed.textContent = `${gpuSpeedValue}%`;
-        
-        // Add data to the chart
+        // Update temperature chart
         addTemperatureData('gpu', gpuTempValue);
-    }
-    
-    // If in dynamic mode, update the slider
-    if (isDynamicMode && data.fanSpeed !== undefined) {
-        const fanSpeedValue = Math.round(data.fanSpeed);
-        fanSlider.value = fanSpeedValue;
-        sliderValue.textContent = `${fanSpeedValue}%`;
         
-        // Sync other sliders
-        cpuFanSlider.value = fanSpeedValue;
-        gpuFanSlider.value = fanSpeedValue;
-        cpuSliderValue.textContent = `${fanSpeedValue}%`;
-        gpuSliderValue.textContent = `${fanSpeedValue}%`;
+        // Update GPU slider indicator
+        if (!isManualMode) {
+            updateSliderIndicator(gpuSliderIndicator, gpuSpeedValue);
+        }
+        
+        // Add high temperature warning
+        if (gpuTempValue > 75) {
+            gpuTemp.classList.add('high');
+            gpuRpm.classList.add('high-temp');
+        } else {
+            gpuTemp.classList.remove('high');
+            gpuRpm.classList.remove('high-temp');
+        }
+        
+        lastGpuSpeed = gpuSpeedValue;
+    }
+
+    // Update Sliders if not in manual mode
+    if (!isManualMode) {
+        if (data.cpu?.speed !== undefined) {
+            cpuFanSlider.value = data.cpu.speed;
+            cpuSliderValue.textContent = `${Math.round(data.cpu.speed)}%`;
+        }
+        if (data.gpu?.speed !== undefined) {
+            gpuFanSlider.value = data.gpu.speed;
+            gpuSliderValue.textContent = `${Math.round(data.gpu.speed)}%`;
+        }
+        if (data.fanSpeed !== undefined) {
+            fanSlider.value = data.fanSpeed;
+            sliderValue.textContent = `${Math.round(data.fanSpeed)}%`;
+            updateSliderIndicator(masterSliderIndicator, data.fanSpeed);
+        }
     }
     
     // Update status
     statusValue.textContent = data.status || 'Connected';
 }
 
-// Function to get a color based on temperature
-function getTemperatureColor(temp) {
-    if (temp < 40) return 'var(--accent)'; // Normal red for consistency
-    if (temp < 60) return '#ff6000'; // Orange
-    if (temp < 75) return '#ff3000'; // Orange-red
-    return '#ff0000'; // Bright red for high temperatures
-}
-
-// Add data to the chart
 function addTemperatureData(type, value) {
     const now = new Date();
-    const timeStr = now.toLocaleTimeString();
-    
-    // Only add a new time entry if it's the first data point or a new second
-    if (temperatureData.labels.length === 0 || temperatureData.labels[temperatureData.labels.length - 1] !== timeStr) {
-        temperatureData.labels.push(timeStr);
-        
-        // Limit data to the selected time range (in seconds)
-        const maxDataPoints = chartTimeRange * 60;
-        if (temperatureData.labels.length > maxDataPoints) {
-            temperatureData.labels.shift();
-            temperatureData.cpu.shift();
-            temperatureData.gpu.shift();
-        }
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Limit data points based on time range
+    const maxDataPoints = chartTimeRange * 12; // Store data for the selected time range (at 5 sec intervals)
+
+    if (temperatureData.labels.length > maxDataPoints) {
+        temperatureData.labels.shift();
+        temperatureData.cpu.shift();
+        temperatureData.gpu.shift();
     }
-    
-    // Add temperatures
+
+    // Add new data point
     if (type === 'cpu') {
+        temperatureData.labels.push(timeStr);
         temperatureData.cpu.push(value);
-        while (temperatureData.cpu.length < temperatureData.labels.length) {
-            temperatureData.cpu.push(null);
+        
+        // If we don't have GPU data for this timestamp, use the last known value
+        if (temperatureData.gpu.length < temperatureData.labels.length) {
+            const lastGpuTemp = temperatureData.gpu.length > 0 ? temperatureData.gpu[temperatureData.gpu.length - 1] : null;
+            temperatureData.gpu.push(lastGpuTemp);
         }
     } else if (type === 'gpu') {
-        temperatureData.gpu.push(value);
-        while (temperatureData.gpu.length < temperatureData.labels.length) {
-            temperatureData.gpu.push(null);
+        // If we already have a label for this timestamp (from CPU data), don't add another
+        if (temperatureData.labels.length > temperatureData.gpu.length) {
+            temperatureData.gpu.push(value);
+        } else {
+            temperatureData.labels.push(timeStr);
+            temperatureData.gpu.push(value);
+            
+            // If we don't have CPU data for this timestamp, use the last known value
+            if (temperatureData.cpu.length < temperatureData.labels.length) {
+                const lastCpuTemp = temperatureData.cpu.length > 0 ? temperatureData.cpu[temperatureData.cpu.length - 1] : null;
+                temperatureData.cpu.push(lastCpuTemp);
+            }
         }
     }
-    
-    // Update the chart
+
     updateChart();
 }
 
-// Update the chart
+
 function updateChart() {
     if (!temperatureChart) return;
     
-    temperatureChart.data.labels = temperatureData.labels;
-    temperatureChart.data.datasets[0].data = temperatureData.cpu;
-    temperatureChart.data.datasets[1].data = temperatureData.gpu;
-    temperatureChart.update();
-}
-
-// Listen for slider events
-fanSlider.addEventListener('input', (e) => {
-    const value = e.target.value;
-    sliderValue.textContent = `${value}%`;
-});
-
-fanSlider.addEventListener('change', (e) => {
-    const value = parseInt(e.target.value);
-    ipcRenderer.send('set-fan-speed', { speed: value });
+    // Filter out any null values for a smoother chart
+    const filteredData = {
+        labels: [],
+        cpu: [],
+        gpu: []
+    };
     
-    // Sync other sliders
-    cpuFanSlider.value = value;
-    gpuFanSlider.value = value;
-    cpuSliderValue.textContent = `${value}%`;
-    gpuSliderValue.textContent = `${value}%`;
-});
-
-cpuFanSlider.addEventListener('input', (e) => {
-    const value = e.target.value;
-    cpuSliderValue.textContent = `${value}%`;
-});
-
-cpuFanSlider.addEventListener('change', (e) => {
-    const value = parseInt(e.target.value);
-    ipcRenderer.send('set-fan-speed', { fanId: 0, speed: value });
-});
-
-gpuFanSlider.addEventListener('input', (e) => {
-    const value = e.target.value;
-    gpuSliderValue.textContent = `${value}%`;
-});
-
-gpuFanSlider.addEventListener('change', (e) => {
-    const value = parseInt(e.target.value);
-    ipcRenderer.send('set-fan-speed', { fanId: 1, speed: value });
-});
-
-// Listen for profile button events
-profileButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const profile = btn.dataset.profile;
-        
-        // Update the UI
-        profileButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Update the current profile
-        currentProfile = profile;
-        
-        // Send to the backend
-        ipcRenderer.send('apply-profile', profile);
-    });
-});
-
-// Listen for the mode change event
-modeToggle.addEventListener('change', () => {
-    isDynamicMode = modeToggle.checked;
-    modeLabel.textContent = isDynamicMode ? 'Auto Mode' : 'Manual Mode';
+    // Keep only every nth point to avoid overcrowding the chart
+    // The number depends on the time range
+    const skipFactor = Math.max(1, Math.floor(temperatureData.labels.length / 60));
     
-    // Enable/disable the slider
-    fanSlider.disabled = isDynamicMode;
-    
-    // Send to the backend
-    ipcRenderer.send('set-mode', isDynamicMode);
-});
-
-// Control buttons
-resetBtn.addEventListener('click', () => {
-    const value = 0;
-    fanSlider.value = value;
-    cpuFanSlider.value = value;
-    gpuFanSlider.value = value;
-    sliderValue.textContent = '0%';
-    cpuSliderValue.textContent = '0%';
-    gpuSliderValue.textContent = '0%';
-    ipcRenderer.send('set-fan-speed', { speed: value });
-});
-
-defaultBtn.addEventListener('click', () => {
-    const value = 50;
-    fanSlider.value = value;
-    cpuFanSlider.value = value;
-    gpuFanSlider.value = value;
-    sliderValue.textContent = '50%';
-    cpuSliderValue.textContent = '50%';
-    gpuSliderValue.textContent = '50%';
-    ipcRenderer.send('set-fan-speed', { speed: value });
-});
-
-// Chart buttons
-chartButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Update the UI
-        chartButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Update the time range
-        chartTimeRange = parseInt(btn.dataset.time);
-        
-        // Reset chart data
-        temperatureData = {
-            labels: [],
-            cpu: [],
-            gpu: []
-        };
-    });
-});
-
-// Listen for fan data
-ipcRenderer.on('fan-data', (event, data) => {
-    // Always use real data
-    console.log("Data received:", data);
-    updateUI(data);
-});
-
-// Function to generate random values in a range
-function getRandomValue(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// Data simulation for development
-let simulationEnabled = false;  // Disabled - use real data
-let simulationInterval;
-
-function startSimulation() {
-    if (simulationEnabled) {
-        if (simulationInterval) clearInterval(simulationInterval);
-        
-        simulationInterval = setInterval(() => {
-            // Create simulated data
-            const simulatedData = {
-                cpu: {
-                    temperature: getRandomValue(40, 65),
-                    rpm: getRandomValue(2000, 7000),
-                    speed: getRandomValue(30, 80)
-                },
-                gpu: {
-                    temperature: getRandomValue(35, 60),
-                    rpm: getRandomValue(1800, 6500),
-                    speed: getRandomValue(30, 70)
-                },
-                fanSpeed: 50,
-                status: isDynamicMode ? "Dynamic" : "Fixed",
-                profile: currentProfile
-            };
-            
-            updateUI(simulatedData);
-        }, 1000);
+    for (let i = 0; i < temperatureData.labels.length; i += skipFactor) {
+        filteredData.labels.push(temperatureData.labels[i]);
+        filteredData.cpu.push(temperatureData.cpu[i]);
+        filteredData.gpu.push(temperatureData.gpu[i]);
     }
+    
+    // Add the most recent point to ensure we're showing current data
+    const lastIndex = temperatureData.labels.length - 1;
+    if (lastIndex >= 0 && (lastIndex % skipFactor !== 0)) {
+        filteredData.labels.push(temperatureData.labels[lastIndex]);
+        filteredData.cpu.push(temperatureData.cpu[lastIndex]);
+        filteredData.gpu.push(temperatureData.gpu[lastIndex]);
+    }
+    
+    temperatureChart.data.labels = filteredData.labels;
+    temperatureChart.data.datasets[0].data = filteredData.cpu;
+    temperatureChart.data.datasets[1].data = filteredData.gpu;
+    
+    // Adjust Y axis based on temperature range
+    const allTemps = [...filteredData.cpu, ...filteredData.gpu].filter(t => t !== null);
+    if (allTemps.length > 0) {
+        const minTemp = Math.max(30, Math.floor(Math.min(...allTemps) / 10) * 10 - 10);
+        const maxTemp = Math.min(100, Math.ceil(Math.max(...allTemps) / 10) * 10 + 10);
+        
+        temperatureChart.options.scales.y.min = minTemp;
+        temperatureChart.options.scales.y.max = maxTemp;
+    }
+    
+    temperatureChart.update('none'); // Use 'none' for smoother updates
+}
+
+// Event Listeners
+function setupEventListeners() {
+    // Sliders
+    fanSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        sliderValue.textContent = `${value}%`;
+        updateSliderIndicator(masterSliderIndicator, value);
+    });
+    fanSlider.addEventListener('change', (e) => {
+        ipcRenderer.send('set-fan-speed', { speed: parseInt(e.target.value) });
+    });
+
+    cpuFanSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        cpuSliderValue.textContent = `${value}%`;
+        updateSliderIndicator(cpuSliderIndicator, value);
+    });
+    cpuFanSlider.addEventListener('change', (e) => {
+        ipcRenderer.send('set-fan-speed', { fanId: 0, speed: parseInt(e.target.value) });
+    });
+
+    gpuFanSlider.addEventListener('input', (e) => {
+        const value = e.target.value;
+        gpuSliderValue.textContent = `${value}%`;
+        updateSliderIndicator(gpuSliderIndicator, value);
+    });
+    gpuFanSlider.addEventListener('change', (e) => {
+        ipcRenderer.send('set-fan-speed', { fanId: 1, speed: parseInt(e.target.value) });
+    });
+
+    // Profile Buttons
+    profileButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            profileButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            ipcRenderer.send('apply-profile', btn.dataset.profile);
+        });
+    });
+
+    // Mode Toggle
+    modeToggle.addEventListener('change', () => {
+        isManualMode = modeToggle.checked;
+        modeLabel.textContent = isManualMode ? 'Manual Mode' : 'Auto Mode';
+        
+        [fanSlider, cpuFanSlider, gpuFanSlider].forEach(slider => {
+            slider.disabled = !isManualMode;
+        });
+
+        ipcRenderer.send('set-mode', isManualMode ? 'manual' : 'auto');
+    });
+
+    // Control Buttons
+    resetBtn.addEventListener('click', () => {
+        const value = 0;
+        fanSlider.value = value;
+        cpuFanSlider.value = value;
+        gpuFanSlider.value = value;
+        sliderValue.textContent = '0%';
+        cpuSliderValue.textContent = '0%';
+        gpuSliderValue.textContent = '0%';
+        
+        updateSliderIndicator(masterSliderIndicator, value);
+        updateSliderIndicator(cpuSliderIndicator, value);
+        updateSliderIndicator(gpuSliderIndicator, value);
+        
+        ipcRenderer.send('set-fan-speed', { speed: value });
+    });
+
+    defaultBtn.addEventListener('click', () => {
+        const value = 50;
+        fanSlider.value = value;
+        cpuFanSlider.value = value;
+        gpuFanSlider.value = value;
+        sliderValue.textContent = '50%';
+        cpuSliderValue.textContent = '50%';
+        gpuSliderValue.textContent = '50%';
+        
+        updateSliderIndicator(masterSliderIndicator, value);
+        updateSliderIndicator(cpuSliderIndicator, value);
+        updateSliderIndicator(gpuSliderIndicator, value);
+        
+        ipcRenderer.send('set-fan-speed', { speed: value });
+    });
+
+    // Chart Buttons
+    chartButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            chartButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            chartTimeRange = parseInt(btn.dataset.time);
+            
+            // Keep existing data but adjust the max points
+            const maxDataPoints = chartTimeRange * 12;
+            while (temperatureData.labels.length > maxDataPoints) {
+                temperatureData.labels.shift();
+                temperatureData.cpu.shift();
+                temperatureData.gpu.shift();
+            }
+            
+            updateChart();
+        });
+    });
+}
+
+
+// Listen for data from the main process
+ipcRenderer.on('fan-data', (event, data) => {
+    try {
+        console.log("Data received:", data);
+        updateUI(data);
+    } catch (error) {
+        console.error("Error updating UI:", error);
+        statusValue.textContent = "UI Error";
+    }
+});
+
+// Setup auto-refresh
+function setupAutoRefresh() {
+    // Clear any existing interval
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+    
+    // Set up a new interval to request data every 5 seconds
+    updateInterval = setInterval(() => {
+        ipcRenderer.send('request-fan-status');
+    }, 5000);
 }
 
 // Initialization function
 function initialize() {
-    // Initialize the chart
     initChart();
+    setupEventListeners();
+    setupAutoRefresh();
     
-    // Reference fan animation elements
-    cpuFanAnimation = document.getElementById('cpu-fan-animation');
-    gpuFanAnimation = document.getElementById('gpu-fan-animation');
+    // Initial UI state
+    modeToggle.checked = false; // Start in Auto mode
+    [fanSlider, cpuFanSlider, gpuFanSlider].forEach(slider => {
+        slider.disabled = true;
+    });
+    modeLabel.textContent = 'Auto Mode';
     
-    // Add an event handler for the refresh button
-    const refreshBtn = document.getElementById('refresh-btn');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            // Add an animation class to the button
-            refreshBtn.classList.add('fan-speed-change');
-            setTimeout(() => refreshBtn.classList.remove('fan-speed-change'), 800);
-            
-            // Request a data update from the backend
-            ipcRenderer.send('request-fan-status');
-            
-            // Animate the cards
-            document.querySelectorAll('.card').forEach(card => {
-                card.classList.add('fan-speed-change');
-                setTimeout(() => card.classList.remove('fan-speed-change'), 800);
-            });
-        });
-    }
+    // Initialize slider indicators
+    updateSliderIndicator(masterSliderIndicator, 0);
+    updateSliderIndicator(cpuSliderIndicator, 0);
+    updateSliderIndicator(gpuSliderIndicator, 0);
+    
+    // Request initial data
+    ipcRenderer.send('request-fan-status');
 }
 
 // Run initialization on page load

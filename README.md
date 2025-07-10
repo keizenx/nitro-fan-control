@@ -71,20 +71,20 @@ For other Linux distributions, please follow the official [NBFC-Linux guide](htt
 Once the backend service is running, you can set up this Electron application.
 
 1.  **Clone the repository:**
-    ```bash
+```bash
     git clone https://github.com/keizenx/nitro-fan-control.git
     cd nitro-fan-control
     ```
 
 2.  **Install dependencies:**
-    ```bash
+```bash
     npm install
-    ```
+```
 
 3.  **Run the application:**
-    ```bash
-    npm start
-    ```
+```bash
+npm start
+```
 
 ## Usage
 

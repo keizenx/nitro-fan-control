@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NITRO FAN CONTROL</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="custom.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 </head>
 <body>
     <div class="titlebar">
         <div class="titlebar-drag">
-            <img src="assets/icon.png" alt="Logo" class="logo">
+            <div class="logo"></div>
             <span>NITRO FAN CONTROL</span>
         </div>
         <div class="titlebar-controls">
-            <button id="minimize-btn">&#xE921;</button>
-            <button id="maximize-btn">&#xE922;</button>
-            <button id="close-btn">&#xE8BB;</button>
+            <button id="minimize-btn">−</button>
+            <button id="maximize-btn">□</button>
+            <button id="close-btn">×</button>
         </div>
     </div>
 
@@ -27,121 +26,124 @@
                 <h2>PROFILES</h2>
                 <div class="profile-buttons">
                     <button class="profile-btn" data-profile="Silent">
-                        <i class="icon">&#xE992;</i>
-                        Silent
+                        <span class="icon">🔇</span> Silent
                     </button>
                     <button class="profile-btn active" data-profile="Balanced">
-                        <i class="icon">&#xE9E9;</i>
-                        Balanced
+                        <span class="icon">⚖️</span> Balanced
                     </button>
                     <button class="profile-btn" data-profile="Turbo">
-                        <i class="icon">&#xF0E7;</i>
-                        Turbo
+                        <span class="icon">🚀</span> Turbo
                     </button>
                 </div>
             </div>
-
+            
             <div class="section">
                 <h2>FAN MODE</h2>
-                <div class="mode-toggle">
-                    <div class="toggle-container">
-                        <label class="switch">
-                            <input type="checkbox" id="mode-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <span id="mode-label">Manual Mode</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section hardware-info">
-                <h2>HARDWARE</h2>
-                <div class="hardware-item">
-                    <span class="label">CPU:</span>
-                    <span class="value" id="cpu-model">-</span>
-                </div>
-                <div class="hardware-item">
-                    <span class="label">GPU:</span>
-                    <span class="value" id="gpu-model">-</span>
+                <div class="mode-toggle toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" id="mode-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="mode-label">Auto Mode</span>
                 </div>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="top-row">
-                <div class="card cpu">
-                    <div class="card-header">
-                        <h2>CPU</h2>
-                        <div class="temp-badge" id="cpu-temp">0°C</div>
-                    </div>
-                    <div class="card-content">
-                        <div class="gauge-container">
-                            <div class="gauge cpu" id="cpu-gauge">
-                                <span class="gauge-value">0</span>
-                                <span class="gauge-label">RPM</span>
-                            </div>
-                        </div>
-                        <div class="stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Speed</span>
-                                <span class="stat-value" id="cpu-speed">0%</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="card cpu" id="cpu-card">
+                <div class="card-header">
+                    <h2>CPU</h2>
+                    <div class="temp-badge" id="cpu-temp">0°C</div>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2>FAN CONTROL</h2>
-                        <button class="control-btn" id="refresh-btn">Refresh</button>
-                    </div>
-                    <div class="card-content">
-                        <div class="slider-container">
-                            <input type="range" min="0" max="100" value="50" class="fan-slider" id="fan-slider">
-                            <div class="slider-value" id="slider-value">50%</div>
-                        </div>
-                        <div class="button-row">
-                            <button class="control-btn" id="reset-btn">Reset</button>
-                            <button class="control-btn primary" id="default-btn">Default</button>
+                <div class="card-content">
+                    <div class="gauge-container">
+                        <div class="gauge cpu" id="cpu-gauge">
+                            <div class="gauge-value" id="cpu-rpm">0</div>
+                            <div class="gauge-label">RPM</div>
                         </div>
                     </div>
-                </div>
-
-                <div class="card gpu">
-                    <div class="card-header">
-                        <h2>GPU</h2>
-                        <div class="temp-badge" id="gpu-temp">0°C</div>
-                    </div>
-                    <div class="card-content">
-                        <div class="gauge-container">
-                            <div class="gauge gpu" id="gpu-gauge">
-                                <span class="gauge-value">0</span>
-                                <span class="gauge-label">RPM</span>
-                            </div>
-                        </div>
-                        <div class="stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Speed</span>
-                                <span class="stat-value" id="gpu-speed">0%</span>
-                            </div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Speed</div>
+                            <div class="stat-value" id="cpu-speed">0%</div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="bottom-row">
-                <div class="card full-width">
-                    <div class="card-header">
-                        <h2>TEMPERATURE HISTORY</h2>
-                        <div class="chart-controls">
-                            <button class="chart-btn active" data-time="5">5m</button>
-                            <button class="chart-btn" data-time="15">15m</button>
-                            <button class="chart-btn" data-time="30">30m</button>
+            
+            <div class="card" id="fan-control-card">
+                <div class="card-header">
+                    <h2>FAN CONTROL</h2>
+                </div>
+                <div class="card-content">
+                    <div class="fan-control-sliders">
+                        <div class="fan-slider-item">
+                            <label>Master Control</label>
+                            <div class="slider-container">
+                                <div class="slider-indicator master"></div>
+                                <input type="range" min="0" max="100" value="0" class="fan-slider master" id="fan-slider">
+                                <span class="slider-value" id="slider-value">0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fan-slider-item">
+                            <label>CPU Fan</label>
+                            <div class="slider-container">
+                                <div class="slider-indicator cpu"></div>
+                                <input type="range" min="0" max="100" value="0" class="fan-slider cpu" id="cpu-fan-slider">
+                                <span class="slider-value" id="cpu-slider-value">0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fan-slider-item">
+                            <label>GPU Fan</label>
+                            <div class="slider-container">
+                                <div class="slider-indicator gpu"></div>
+                                <input type="range" min="0" max="100" value="0" class="fan-slider gpu" id="gpu-fan-slider">
+                                <span class="slider-value" id="gpu-slider-value">0%</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-content">
-                        <canvas id="temp-chart"></canvas>
+                    
+                    <div class="button-row">
+                        <button class="control-btn" id="reset-btn">RESET</button>
+                        <button class="control-btn primary" id="default-btn">DEFAULT</button>
                     </div>
+                </div>
+            </div>
+            
+            <div class="card gpu" id="gpu-card">
+                <div class="card-header">
+                    <h2>GPU</h2>
+                    <div class="temp-badge" id="gpu-temp">0°C</div>
+                </div>
+                <div class="card-content">
+                    <div class="gauge-container">
+                        <div class="gauge gpu" id="gpu-gauge">
+                            <div class="gauge-value" id="gpu-rpm">0</div>
+                            <div class="gauge-label">RPM</div>
+                        </div>
+                    </div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Speed</div>
+                            <div class="stat-value" id="gpu-speed">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" id="temp-history-card">
+                <div class="card-header">
+                    <h2>TEMPERATURE HISTORY</h2>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-time="5">5m</button>
+                        <button class="chart-btn" data-time="15">15m</button>
+                        <button class="chart-btn" data-time="30">30m</button>
+                    </div>
+                </div>
+                <div class="card-content chart-container">
+                    <canvas id="temp-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -153,10 +155,10 @@
             <span id="status-value">Connected</span>
         </div>
         <div class="status-item">
-            <span>v1.0.12</span>
+            <span id="app-version">v1.0.17</span>
         </div>
     </div>
 
-    <script src="renderer.js"></script>
+    <script src="./renderer.js"></script>
 </body>
-</html> 
+</html>
