@@ -1,7 +1,7 @@
 # Nitro Fan Control
 
 <p align="center">
-  <img src="assets/Nitro_screen.png" alt="Nitro Fan Control Screenshot" width="800"/>
+  <img src="assets/Screenshot.png" alt="Nitro Fan Control Screenshot" width="800"/>
 </p>
 
 <p align="center">
@@ -11,7 +11,7 @@
 <p align="center">
     <img src="https://img.shields.io/badge/platform-Linux-brightgreen" alt="Platform">
     <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
-    <img src="https://img.shields.io/badge/version-1.0.0-blueviolet" alt="Version">
+    <img src="https://img.shields.io/badge/version-1.0.17-blueviolet" alt="Version">
     <img src="https://img.shields.io/badge/contributions-welcome-orange" alt="Contributions">
 </p>
 
@@ -93,7 +93,6 @@ npm start
     - **Manual Mode**: Allows you to set a fixed percentage for fan speeds using the sliders. The master slider controls both fans, while individual sliders offer fine-grained control.
     - **Auto Mode**: Lets the NBFC service manage fan speeds automatically. The sliders will be disabled.
 - **Graph**: The temperature graph displays the history for the last 5, 15, or 30 minutes.
-- **Refresh**: The refresh button re-fetches the latest data from the fan service.
 
 ## License
 
