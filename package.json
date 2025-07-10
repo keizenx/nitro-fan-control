@@ -14,7 +14,10 @@
     "acer",
     "nitro"
   ],
-  "author": "franckbello0@gmail.com",
+  "author": {
+  "name": "keizenx",
+  "email": "franckbello0@gmail.com"
+}
   "license": "MIT",
   "devDependencies": {
     "electron": "^37.2.0",
