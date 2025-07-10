@@ -46,7 +46,16 @@ function createWindow() {
   });
 
   // Load the HTML interface
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  let indexPath;
+  if (app.isPackaged) {
+    // In production, use the absolute path to the file in the asar
+    indexPath = path.join(app.getAppPath(), 'renderer', 'index.html');
+  } else {
+    // In development, use a path relative to __dirname
+    indexPath = path.join(__dirname, 'renderer', 'index.html');
+  }
+  console.log(`[Main] Loading HTML from: ${indexPath}`);
+  mainWindow.loadFile(indexPath);
 
   // Show the window once it's ready
   mainWindow.once('ready-to-show', () => {
