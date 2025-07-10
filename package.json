@@ -17,10 +17,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^26.0.0",
-    "electron-builder": "^24.4.0"
+    "electron": "^37.2.0",
+    "electron-builder": "^24.13.3"
   },
   "dependencies": {
     "chart.js": "^4.3.3"
   }
-} 
+}
